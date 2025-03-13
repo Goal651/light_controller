@@ -5,7 +5,7 @@ def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected to MQTT broker with code: " + str(rc))
         # Subscribe to the topic
-        client.subscribe("/student_group/light_control")
+        client.subscribe("/wigothehacker/light_control")
     else:
         print("Connection failed with code: " + str(rc))
 

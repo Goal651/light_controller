@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Light Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        button {
+            padding: 15px 30px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Light Control Panel</h1>
+    <button onclick="sendCommand('ON')">Turn ON</button>
+    <button onclick="sendCommand('OFF')">Turn OFF</button>
+    <div id="status">Status: Waiting for command...</div>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        // Connect to specified MQTT broker
+        const client = mqtt.connect('ws://157.173.101.159:9001');
+
+        client.on('connect', () => {
+            console.log('Connected to MQTT broker at ws://157.173.101.159:9001');
+        });
+
+        client.on('error', (err) => {
+            console.error('Connection error: ', err);
+            document.getElementById('status').innerText = 
+                'Status: Error connecting to MQTT broker';
+        });
+
+        function sendCommand(state) {
+            const topic = '/student_group/light_control';
+            const message = state;
+            
+            client.publish(topic, message, () => {
+                document.getElementById('status').innerText = 
+                    `Status: Last command sent - ${state}`;
+                console.log(`Sent ${message} to ${topic}`);
+            });
+        }
+    </script>
+</body>
+</html>

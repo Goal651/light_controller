@@ -1,34 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Light Control</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light Control Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
+        /* Custom toggle switch styles */
+        .toggle-checkbox:checked + .toggle-label .toggle-ball {
+            transform: translateX(24px);
         }
-        button {
-            padding: 15px 30px;
-            margin: 5px;
-            font-size: 16px;
-            cursor: pointer;
+        /* Bulb simulation */
+        .bulb {
+            transition: all 0.3s ease-in-out;
         }
-        #status {
-            margin-top: 20px;
-            font-size: 18px;
+        .bulb-on {
+            background: radial-gradient(circle at center, #fefcbf 0%, #f6e05e 50%, #ecc94b 100%);
+            box-shadow: 0 0 20px rgba(252, 211, 77, 0.8);
+        }
+        .bulb-off {
+            background: #4a5568;
+            box-shadow: none;
         }
     </style>
 </head>
-<body>
-    <h1>Light Control Panel</h1>
-    <button onclick="sendCommand('ON')">Turn ON</button>
-    <button onclick="sendCommand('OFF')">Turn OFF</button>
-    <div id="status">Status: Waiting for command...</div>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center">
+    <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
+        <h1 class="text-2xl font-bold text-center text-white mb-6">Light Control Dashboard</h1>
+        
+        <!-- Bulb Simulation -->
+        <div class="flex justify-center mb-6">
+            <div id="bulb" class="bulb bulb-off w-24 h-24 rounded-full"></div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-center space-x-4 mb-6">
+            <button 
+                onclick="sendCommand('ON')" 
+                class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
+                Turn ON
+            </button>
+            <button 
+                onclick="sendCommand('OFF')" 
+                class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
+                Turn OFF
+            </button>
+        </div>
+
+        <!-- Toggle Switch -->
+        <div class="flex items-center justify-center mb-6">
+            <span class="mr-3 text-gray-300">Toggle Light:</span>
+            <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                <input 
+                    type="checkbox" 
+                    id="toggle" 
+                    class="toggle-checkbox hidden" 
+                    onchange="sendCommand(this.checked ? 'ON' : 'OFF')">
+                <label 
+                    for="toggle" 
+                    class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer">
+                    <span 
+                        class="toggle-ball absolute block w-6 h-6 rounded-full bg-white border border-gray-500 shadow transform transition duration-300 ease-in-out">
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Status Display -->
+        <div id="status" class="text-center text-gray-300 bg-gray-700 p-3 rounded-lg shadow-inner">
+            Status: Waiting for command...
+        </div>
+    </div>
 
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script>
-        // Connect to specified MQTT broker
+        const bulb = document.getElementById('bulb');
         const client = mqtt.connect('ws://157.173.101.159:9001');
 
         client.on('connect', () => {
@@ -47,8 +93,18 @@
             
             client.publish(topic, message, () => {
                 document.getElementById('status').innerText = 
-                    `Status: Last command sent - ${state}`;
+                    `Status: Light ${state === 'ON' ? 'turned ON' : 'turned OFF'}`;
                 console.log(`Sent ${message} to ${topic}`);
+                
+                // Update bulb and toggle
+                if (state === 'ON') {
+                    bulb.classList.remove('bulb-off');
+                    bulb.classList.add('bulb-on');
+                } else {
+                    bulb.classList.remove('bulb-on');
+                    bulb.classList.add('bulb-off');
+                }
+                document.getElementById('toggle').checked = (state === 'ON');
             });
         }
     </script>
